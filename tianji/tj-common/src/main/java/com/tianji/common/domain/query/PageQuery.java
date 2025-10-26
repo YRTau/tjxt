@@ -35,7 +35,15 @@ public class PageQuery {
     public int from(){
         return (pageNo - 1) * pageSize;
     }
-
+    /**
+     * DDD分页业务领域对象PageQuery 转换为MyBatis Plus的分页对象Page，作为MP的查询参数
+     * 自定义处理了0个或者多个排序字段OrderItem以及对应的升序Asc降序Desc排序，不用在外部处理page.addOrder(orderItem)
+     * 可以满足前端要求的排序规则
+     * 可以复用别的服务
+     *
+     * @param orderItems 排序字段
+     * @return
+     */
     public <T> Page<T> toMpPage(OrderItem ... orderItems) {
         Page<T> page = new Page<>(pageNo, pageSize);
         // 是否手动指定排序方式

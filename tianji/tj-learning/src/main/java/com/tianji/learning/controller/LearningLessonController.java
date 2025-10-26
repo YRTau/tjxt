@@ -42,7 +42,12 @@ public class LearningLessonController {
     public LearningLessonVO queryMyCurrentLesson() {
         return lessonService.queryMyCurrentLesson();
     }
-
+    /**
+     * 查询指定课程信息
+     * 根据课程id，查询当前用户的课表中是否有该课程，如果有该课程则需要返回课程的学习进度、课程有效期等信息。
+     * @param courseId 课程id
+     * @return 课程信息
+     */
     @GetMapping("/{courseId}")
     @ApiOperation("查询指定课程信息")
     public LearningLessonVO queryLessonByCourseId(
@@ -56,14 +61,24 @@ public class LearningLessonController {
             @ApiParam(value = "课程id" ,example = "1") @PathVariable("courseId") Long courseId) {
         lessonService.deleteCourseFromLesson(null, courseId);
     }
-
+    /**
+     * 统计课程学习人数
+     * 根据课程id，查询当前课程的报名人数，返回该课程的报名人数，内部调用接口，提供给其他服务调用。
+     * @param courseId 课程id
+     * @return 课程学习人数
+     */
     @ApiOperation("统计课程学习人数")
     @GetMapping("/{courseId}/count")
     public Integer countLearningLessonByCourse(
             @ApiParam(value = "课程id" ,example = "1") @PathVariable("courseId") Long courseId){
         return lessonService.countLearningLessonByCourse(courseId);
     }
-
+/**
+     * 校验当前课程是否已经报名
+     * 根据课程id，检查当前用户的课表中是否有该课程，课程状态是否有效
+     * @param courseId 课程id
+     * @return 课程id
+     */
     @ApiOperation("校验当前课程是否已经报名")
     @GetMapping("/{courseId}/valid")
     public Long isLessonValid(

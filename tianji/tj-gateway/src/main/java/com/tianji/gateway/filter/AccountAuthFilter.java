@@ -50,6 +50,7 @@ public class AccountAuthFilter implements GlobalFilter, Ordered {
         R<LoginUserDTO> r = authUtil.parseToken(token);
 
         // 4.如果用户是登录状态，尝试更新请求头，传递用户信息
+            //这里把解析得到的userId放入请求头中，传递给下游，方便后续使用
         if(r.success()){
             exchange.mutate()
                     .request(builder -> builder.header(USER_HEADER, r.getData().getUserId().toString()))

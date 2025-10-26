@@ -20,7 +20,11 @@ public class ResourceInterceptorConfiguration implements WebMvcConfigurer {
     public ResourceInterceptorConfiguration(ResourceAuthProperties resourceAuthProperties) {
         this.authProperties = resourceAuthProperties;
     }
-
+    /**
+     * 添加拦截器
+     * 注册拦截器，注册时的order值越小，优先级越高
+     * @param registry
+     */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 1.添加用户信息拦截器

@@ -7,7 +7,12 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
+/**
+ * 用户信息拦截器UserInfoInterceptor
+ * 将网关Gateway放入请求头中的userId取出来放入UserContext中，这是一个基于ThreadLocal的工具
+ * 可以确保不同的请求之间互不干扰，避免线程安全问题发生
+ * 每个微服务都需要添加该拦截器，抽取出来到认证模块auth中，在auth中统一注册各种拦截器并定义顺序
+ */
 @Slf4j
 public class UserInfoInterceptor implements HandlerInterceptor {
 

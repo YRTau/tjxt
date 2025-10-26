@@ -40,7 +40,10 @@ public class LessonChangeListener {
         log.debug("监听到用户{}的订单{}，需要添加课程{}到课表中", order.getUserId(), order.getOrderId(), order.getCourseIds());
         lessonService.addUserLessons(order.getUserId(), order.getCourseIds());
     }
-
+    /**
+     * 监听订单退款成功消息 - 将课程从用户的课表中删除
+     * @param order 订单信息
+     */
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(value = "learning.lesson.refund.queue", durable = "true"),
             exchange = @Exchange(name = MqConstants.Exchange.ORDER_EXCHANGE, type = ExchangeTypes.TOPIC),

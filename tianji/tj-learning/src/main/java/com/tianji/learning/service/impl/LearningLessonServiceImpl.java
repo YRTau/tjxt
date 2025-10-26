@@ -89,7 +89,12 @@ public class LearningLessonServiceImpl extends ServiceImpl<LearningLessonMapper,
         // 3.批量新增
         saveBatch(list);
     }
-
+    /**
+     * 查询我的课表
+     * 分页查询Pgae-MyBatisPlus用法，
+     * 联查课程详细信息(章节、封面等信息)返回
+     * @return 正在学习的课程信息
+     */
     @Override
     public PageDTO<LearningLessonVO> queryMyLessons(PageQuery query) {
         // 1.获取当前登录用户
@@ -136,7 +141,11 @@ public class LearningLessonServiceImpl extends ServiceImpl<LearningLessonMapper,
                 .collect(Collectors.toMap(CourseSimpleInfoDTO::getId, c -> c));
         return cMap;
     }
-
+    /**
+     * 查询正在学习的课程
+     * 联查学习状态为1正在学习，补充当前学习的章节信息
+     * @return 正在学习的课程信息
+     */
     @Override
     public LearningLessonVO queryMyCurrentLesson() {
         // 1.获取当前登录的用户
@@ -176,7 +185,12 @@ public class LearningLessonServiceImpl extends ServiceImpl<LearningLessonMapper,
         }
         return vo;
     }
-
+    /**
+     * 查询课程信息
+     * 根据课程id，查询当前用户的课表中是否有该课程，如果有该课程则需要返回课程的学习进度、课程有效期等信息
+     * @param courseId 课程id
+     * @return 课程信息
+     */
     @Override
     public LearningLessonVO queryLessonByCourseId(Long courseId) {
         // 1.获取当前登录用户
@@ -189,7 +203,12 @@ public class LearningLessonServiceImpl extends ServiceImpl<LearningLessonMapper,
         // 3.处理VO
         return BeanUtils.copyBean(lesson, LearningLessonVO.class);
     }
-
+    /**
+     * 删除课程
+     * 可重用：
+     * 消费MQ退款成功发送的消息，调这个删除课程
+     * 用户手动删除课程
+     **/
     @Override
     public void deleteCourseFromLesson(Long userId, Long courseId) {
         // 1.获取当前登录用户
@@ -211,7 +230,11 @@ public class LearningLessonServiceImpl extends ServiceImpl<LearningLessonMapper,
                         LessonStatus.FINISHED.getValue())
                 .count();
     }
-
+    /**
+     * 判断课程是否有效
+     * @param courseId 课程id
+     * @return 课程id
+     */
     @Override
     public Long isLessonValid(Long courseId) {
         // 1.获取登录用户
@@ -305,7 +328,13 @@ public class LearningLessonServiceImpl extends ServiceImpl<LearningLessonMapper,
         }
         return result.pageInfo(p.getTotal(), p.getPages(), voList);
     }
-
+    /**
+     * 构建查询用户和课程的wrapper
+     * 链式调用和Builder模式
+     * @param userId
+     * @param courseId
+     * @return
+     */
     private LambdaQueryWrapper<LearningLesson> buildUserIdAndCourseIdWrapper(Long userId, Long courseId) {
         LambdaQueryWrapper<LearningLesson> queryWrapper = new QueryWrapper<LearningLesson>()
                 .lambda()
