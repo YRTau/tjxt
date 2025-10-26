@@ -1,5 +1,7 @@
 package com.tianji.common.constants;
-
+/**
+ * MQ常量类-Exchange routingKey
+ */
 public interface MqConstants {
     interface Exchange{
         /*课程有关的交换机*/
@@ -39,7 +41,7 @@ public interface MqConstants {
         String COURSE_EXPIRE_KEY = "course.expire";
         String COURSE_DELETE_KEY = "course.delete";
 
-        /*订单有关的RoutingKey*/
+//        /*订单有关的RoutingKey*/
         String ORDER_PAY_KEY = "order.pay";
         String ORDER_REFUND_KEY = "order.refund";
 

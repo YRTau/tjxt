@@ -15,15 +15,19 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
+// 推荐的注入方式，不使用Autowired 使用构造器注入+注解
 @RequiredArgsConstructor
 public class LessonChangeListener {
 
     private final ILearningLessonService lessonService;
-
+    /**
+     * 监听订单支付成功消息 - 将支付成功的课程加入用户的课表中
+     * @param order 订单信息
+     */
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(value = "learning.lesson.pay.queue", durable = "true"),
             exchange = @Exchange(name = MqConstants.Exchange.ORDER_EXCHANGE, type = ExchangeTypes.TOPIC),
-            key = MqConstants.Key.ORDER_PAY_KEY
+            key = MqConstants.Key.ORDER_PAY_KEY  // key 作为路由键，表示绑定哪种消息
     ))
     public void listenLessonPay(OrderBasicDTO order){
         // 1.健壮性处理
@@ -40,7 +44,7 @@ public class LessonChangeListener {
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(value = "learning.lesson.refund.queue", durable = "true"),
             exchange = @Exchange(name = MqConstants.Exchange.ORDER_EXCHANGE, type = ExchangeTypes.TOPIC),
-            key = MqConstants.Key.ORDER_REFUND_KEY
+            key = MqConstants.Key.ORDER_REFUND_KEY  // key 作为路由键，表示绑定哪种消息
     ))
     public void listenLessonRefund(OrderBasicDTO order){
         // 1.健壮性处理

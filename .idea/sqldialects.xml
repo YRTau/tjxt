@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SqlDialectMappings">
+    <file url="file://$PROJECT_DIR$/sql/tj_learning.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/天机学堂-课件/day02-我的课表/资料/learning_lesson.sql" dialect="MySQL" />
+  </component>
+</project>

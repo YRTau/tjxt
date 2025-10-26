@@ -54,7 +54,12 @@ public class LearningLessonServiceImpl extends ServiceImpl<LearningLessonMapper,
     private final CourseClient courseClient;
     private final CatalogueClient catalogueClient;
     private final LearningRecordMapper recordMapper;
-
+    /**
+     * 批量添加课程到某用户的课表
+     *
+     * @param userId    用户id
+     * @param courseIds 课程id列表
+     */
     @Override
     @Transactional
     public void addUserLessons(Long userId, List<Long> courseIds) {
