@@ -5,7 +5,10 @@ import lombok.Data;
 import java.time.Duration;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
-
+/**
+ * 延迟任务类
+ * Delayed类型 要实现两个接口，getDelay()和compareTo()
+ */
 @Data
 public class DelayTask<D> implements Delayed {
     private D data;

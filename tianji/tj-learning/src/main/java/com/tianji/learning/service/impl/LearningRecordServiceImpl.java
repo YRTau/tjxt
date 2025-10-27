@@ -41,7 +41,12 @@ public class LearningRecordServiceImpl extends ServiceImpl<LearningRecordMapper,
     private final CourseClient courseClient;
 
     private final LearningRecordDelayTaskHandler taskHandler;
-
+    /**
+     * 查询用户学习记录
+     * 查的最后一次学习的小节及其信息
+     * @param courseId 课程id
+     * @return 课程学习记录
+     */
     @Override
     public LearningLessonDTO queryLearningRecordByCourse(Long courseId) {
         // 1.获取登录用户
@@ -77,7 +82,7 @@ public class LearningRecordServiceImpl extends ServiceImpl<LearningRecordMapper,
             // 没有新学完的小节，无需更新课表中的学习进度
             return;
         }
-        // 3.处理课表数据
+        // 3.处理课表数据，到这里说明这个小节都学完了
         handleLearningLessonsChanges(recordDTO);
     }
 
@@ -87,7 +92,7 @@ public class LearningRecordServiceImpl extends ServiceImpl<LearningRecordMapper,
         if (lesson == null) {
             throw new BizIllegalException("课程不存在，无法更新数据！");
         }
-        // 2.判断是否有新的完成小节
+        // 2.判断课程是否全部学完
         boolean allLearned = false;
 
             // 3.如果有新完成的小节，则需要查询课程数据
@@ -106,7 +111,15 @@ public class LearningRecordServiceImpl extends ServiceImpl<LearningRecordMapper,
                 .eq(LearningLesson::getId, lesson.getId())
                 .update();
     }
-
+    /**
+     * 处理视频学习记录
+     * 平时提交的记录先延迟队列提交到缓存，只有最新的缓存跟之前延迟缓存一致时才写库。
+     * 避免每次提交的学习记录都写库，提升性能
+     * 但是如果视频是第一次完成finished，则需要直接写库，比较重要
+     * 最终一致性
+     * @param recordDTO 记录数据
+     * @return 是否新学完小节
+     */
     private boolean handleVideoRecord(Long userId, LearningRecordFormDTO recordDTO) {
         // 1.查询旧的学习记录
         LearningRecord old = queryOldRecord(recordDTO.getLessonId(), recordDTO.getSectionId());
@@ -125,8 +138,9 @@ public class LearningRecordServiceImpl extends ServiceImpl<LearningRecordMapper,
             return false;
         }
         // 4.存在，则更新
-        // 4.1.判断是否是第一次完成
+        // 4.1.判断是否是 "第一次"完成
         boolean finished = !old.getFinished() && recordDTO.getMoment() * 2 >= recordDTO.getDuration();
+            // 不是第一次完成，说明这次就是更新一下学习记录，可以合并写请求，可以先把学习记录缓存，后面累积再写库。
         if(!finished){
             LearningRecord record = new LearningRecord();
             record.setLessonId(recordDTO.getLessonId());
@@ -134,10 +148,13 @@ public class LearningRecordServiceImpl extends ServiceImpl<LearningRecordMapper,
             record.setMoment(recordDTO.getMoment());
             record.setId(old.getId());
             record.setFinished(old.getFinished());
+                // 使用延迟任务合并写请求？ 前端自动提交是15s一次
+                // 每次延迟任务20s，如果跟上次的任务执行时写是的同一个record，说明20s之内没有新的更新，提交过来的都是旧的记录，
+                // 那么就可以合并了，直接写库
             taskHandler.addLearningRecordTask(record);
             return false;
         }
-        // 4.2.更新数据
+        // 4.2.更新数据 视频是第一次完成finished，则需要直接写库，比较重要
         boolean success = lambdaUpdate()
                 .set(LearningRecord::getMoment, recordDTO.getMoment())
                 .set(LearningRecord::getFinished, true)
@@ -148,6 +165,7 @@ public class LearningRecordServiceImpl extends ServiceImpl<LearningRecordMapper,
             throw new DbException("更新学习记录失败！");
         }
         // 4.3.清理缓存
+            // 避免下次提交时联查延迟任务时发现一致，导致重复更新课表中的学习进度
         taskHandler.cleanRecordCache(recordDTO.getLessonId(), recordDTO.getSectionId());
         return true;
     }
@@ -168,7 +186,13 @@ public class LearningRecordServiceImpl extends ServiceImpl<LearningRecordMapper,
         taskHandler.writeRecordCache(record);
         return record;
     }
-
+    /**
+     * 学习记录 - 处理考试学习记录
+     * 如果这小节的类型是考试 那么提交说明完成这小节，直接添加学习记录
+     * @param userId 用户ID
+     * @param recordDTO 数据
+     * @return 是否新学完小节
+     */
     private boolean handleExamRecord(Long userId, LearningRecordFormDTO recordDTO) {
         // 1.转换DTO为PO
         LearningRecord record = BeanUtils.copyBean(recordDTO, LearningRecord.class);

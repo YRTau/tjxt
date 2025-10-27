@@ -21,7 +21,7 @@ public enum SectionType implements BaseEnum {
         this.desc = desc;
     }
 
-
+    //这个注解标记在value字段上，表示当这个枚举对象被序列化为JSON时，直接使用该字段的值而不是枚举的名称。
     @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static SectionType of(Integer value){
         if (value == null) {
